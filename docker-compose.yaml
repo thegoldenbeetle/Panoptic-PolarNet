@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  workspace:
+    build:
+      context: "."
+      args:
+        - "UID=${DOCKER_UID:-1000}"
+        - "GID=${DOCKER_GID:-1000}"
+    image: map_builder_service:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu, utility, compute]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIE=all
+      - DISPLAY=${DISPLAY} 
+    network_mode: host
+    shm_size: '14gb'
+    volumes:
+      - ./:/source
+      - /media/s0001645/PandoraBox/dataset/dataset:/data
+      # timeexit
+      - /etc/localtime:/etc/localtime:ro
+      # x11
+      - /home/s0001645/.Xauthority:/home/lidar_user/.Xauthority
+

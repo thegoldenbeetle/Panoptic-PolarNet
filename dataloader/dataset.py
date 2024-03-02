@@ -331,7 +331,7 @@ class spherical_dataset(data.Dataset):
         intervals = crop_range/(cur_grid_size-1)
 
         if (intervals==0).any(): print("Zero interval!")
-        grid_ind = (np.floor((np.clip(xyz_pol,min_bound,max_bound)-min_bound)/intervals)).astype(np.int)
+        grid_ind = (np.floor((np.clip(xyz_pol,min_bound,max_bound)-min_bound)/intervals)).astype(np.int64)
 
         current_grid = grid_ind[:np.size(labels)]
 
