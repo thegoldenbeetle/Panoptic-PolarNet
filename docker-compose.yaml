@@ -22,7 +22,8 @@ services:
     shm_size: '14gb'
     volumes:
       - ./:/source
-      - /media/s0001645/PandoraBox/dataset/dataset:/data
+      - /media/s0001645/PandoraBox1/dataset/dataset:/data
+      - /home/s0001645/Study/data/KITTI_PART:/data_kitti
       # timeexit
       - /etc/localtime:/etc/localtime:ro
       # x11
