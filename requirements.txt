@@ -7,3 +7,7 @@ numba>=0.39.0
 Cython
 scipy
 dropblock
+open3d
+
+notebook==6.4.10
+traitlets==5.9.0
