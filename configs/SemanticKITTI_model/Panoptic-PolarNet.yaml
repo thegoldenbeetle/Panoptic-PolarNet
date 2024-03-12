@@ -4,8 +4,8 @@ dataset:
     name: semantickitti
     # path: data
     path: /data
-    output_path: out/SemKITTI
-    instance_pkl_path: data
+    output_path: out/SemKITTI_2
+    instance_pkl_path: /instance_preprocess
     rotate_aug: True
     flip_aug: True
     inst_aug: True
@@ -15,11 +15,12 @@ dataset:
         inst_global_aug: True
     gt_generator:
         sigma: 5
-    grid_size: [480,360,32]
+    grid_size: [320,240,32]
+    # grid_size: [480,360,32]
 
 model:
     model_save_path: ./Panoptic_SemKITTI.pt
-    pretrained_model: /pretrained_weight/Panoptic_SemKITTI_PolarNet.pt
+    # pretrained_model: /pretrained_weight/Panoptic_SemKITTI_PolarNet.pt
     polar: True
     visibility: True
     

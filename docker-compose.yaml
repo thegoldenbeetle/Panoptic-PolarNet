@@ -18,11 +18,14 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIE=all
       - DISPLAY=${DISPLAY} 
+      - DOCKER_UID=${DOCKER_UID:-1000}
+      - DOCKER_GID=${DOCKER_GID:-1000}
     network_mode: host
     shm_size: '14gb'
     volumes:
       - ./:/source
       - /media/s0001645/PandoraBox1/dataset/dataset:/data
+      - /media/s0001645/PandoraBox1/dataset/instance_preprocess:/instance_preprocess
       - /home/s0001645/Study/data/KITTI_PART:/data_kitti
       # timeexit
       - /etc/localtime:/etc/localtime:ro

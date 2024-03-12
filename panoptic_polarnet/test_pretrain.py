@@ -11,12 +11,12 @@ import torch.optim as optim
 from tqdm import tqdm
 import errno
 
-from network.BEV_Unet import BEV_Unet
-from network.ptBEV import ptBEVnet
-from dataloader.dataset import collate_fn_BEV,SemKITTI,SemKITTI_label_name,spherical_dataset,voxel_dataset,collate_fn_BEV_test
-from network.instance_post_processing import get_panoptic_segmentation
-from utils.eval_pq import PanopticEval
-from utils.configs import merge_configs
+from panoptic_polarnet.network.BEV_Unet import BEV_Unet
+from panoptic_polarnet.network.ptBEV import ptBEVnet
+from panoptic_polarnet.dataloader.dataset import collate_fn_BEV,SemKITTI,SemKITTI_label_name,spherical_dataset,voxel_dataset,collate_fn_BEV_test
+from panoptic_polarnet.network.instance_post_processing import get_panoptic_segmentation
+from panoptic_polarnet.utils.eval_pq import PanopticEval
+from panoptic_polarnet.utils.configs import merge_configs
 #ignore weird np warning
 import warnings
 warnings.filterwarnings("ignore")
@@ -80,7 +80,7 @@ def main(args):
                                                     collate_fn = collate_fn_BEV,
                                                     shuffle = False,
                                                     num_workers = 4)
-
+    
     # validation
     print('*'*80)
     print('Test network performance on validation split')
@@ -156,8 +156,10 @@ def main(args):
                 predict_labels,center,offset = my_model(test_pt_fea_ten,test_grid_ten,test_vox_fea_ten)
             else:
                 predict_labels,center,offset = my_model(test_pt_fea_ten,test_grid_ten)
+                        
             # write to label file
             for count,i_test_grid in enumerate(test_grid):
+
                 # get foreground_mask
                 for_mask = torch.zeros(1,grid_size[0],grid_size[1],grid_size[2],dtype=torch.bool).to(pytorch_device)
                 for_mask[0,test_grid[count][:,0],test_grid[count][:,1],test_grid[count][:,2]] = True
@@ -167,6 +169,8 @@ def main(args):
                                                                                           top_k=args['model']['post_proc']['top_k'], polar=circular_padding,foreground_mask=for_mask)
                 panoptic_labels = panoptic_labels.cpu().detach().numpy().astype(np.uint32)
                 panoptic = panoptic_labels[0,test_grid[count][:,0],test_grid[count][:,1],test_grid[count][:,2]]
+                
+                
                 save_dir = test_pt_dataset.im_idx[test_index[count]]
                 _,dir2 = save_dir.split('/sequences/',1)
                 new_save_dir = output_path + '/sequences/' +dir2.replace('velodyne','predictions')[:-3]+'label'

@@ -8,6 +8,7 @@ Cython
 scipy
 dropblock
 open3d
+onnx
 
 notebook==6.4.10
 traitlets==5.9.0

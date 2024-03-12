@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
-from dataloader.dataset import SemKITTI
+from panoptic_polarnet.dataloader.dataset import SemKITTI
 
 if __name__ == '__main__':
     # instance preprocessing

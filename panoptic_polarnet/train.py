@@ -9,13 +9,13 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 
-from network.BEV_Unet import BEV_Unet
-from network.ptBEV import ptBEVnet
-from dataloader.dataset import collate_fn_BEV,SemKITTI,SemKITTI_label_name,spherical_dataset,voxel_dataset
-from network.instance_post_processing import get_panoptic_segmentation
-from network.loss import panoptic_loss
-from utils.eval_pq import PanopticEval
-from utils.configs import merge_configs
+from panoptic_polarnet.network.BEV_Unet import BEV_Unet
+from panoptic_polarnet.network.ptBEV import ptBEVnet
+from panoptic_polarnet.dataloader.dataset import collate_fn_BEV,SemKITTI,SemKITTI_label_name,spherical_dataset,voxel_dataset
+from panoptic_polarnet.network.instance_post_processing import get_panoptic_segmentation
+from panoptic_polarnet.network.loss import panoptic_loss
+from panoptic_polarnet.utils.eval_pq import PanopticEval
+from panoptic_polarnet.utils.configs import merge_configs
 #ignore weird np warning
 import warnings
 warnings.filterwarnings("ignore")
@@ -218,11 +218,12 @@ def main(args):
         pbar.close()
         epoch += 1
 
+
 if __name__ == '__main__':
     # Training settings
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-d', '--data_dir', default='data')
-    parser.add_argument('-p', '--model_save_path', default='./Panoptic_SemKITTI.pt')
+    parser.add_argument('-d', '--data_dir', default='/data')
+    parser.add_argument('-p', '--model_save_path', default='./Panoptic_SemKITTI_2.pt')
     parser.add_argument('-c', '--configs', default='configs/SemanticKITTI_model/Panoptic-PolarNet.yaml')
     parser.add_argument('--pretrained_model', default='empty')
 
