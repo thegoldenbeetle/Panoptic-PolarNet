@@ -44,6 +44,7 @@ USER ${DUSER}
 ENV PATH "$PATH:/home/${DUSER}/.local/bin"
 
 COPY --chown=${DUSER}:${DUSER} requirements.txt /${WORKDIR}/
+
 WORKDIR /${WORKDIR}
 RUN python3 -m pip install -U pip wheel 
 RUN python3 -m pip install \
@@ -61,8 +62,3 @@ RUN chsh ${DUSER} -s /usr/bin/bash
 USER ${DUSER}
 
 ENV PYTHONPATH "${PYTHONPATH}:/${WORKDIR}"
-
-COPY --chown=${DUSER}:${DUSER} run.sh /${WORKDIR}/
-USER root
-ENTRYPOINT [ "./run.sh" ]
-
