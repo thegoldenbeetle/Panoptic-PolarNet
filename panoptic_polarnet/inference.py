@@ -24,6 +24,7 @@ from panoptic_polarnet.dataloader.process_panoptic import PanopticLabelGenerator
 import warnings
 warnings.filterwarnings("ignore")
 
+
 ######## Onnx scatter
 import torch
 import torch.nn as nn
@@ -45,16 +46,6 @@ def symbolic_scatter_max(g, src, index, dim=-1, out=None, dim_size=None, fill_va
 
 
 
-def SemKITTI2train(label):
-    if isinstance(label, list):
-        return [SemKITTI2train_single(a) for a in label]
-    else:
-        return SemKITTI2train_single(label)
-
-def SemKITTI2train_single(label):
-    return label - 1 # uint8 trick
-
-
 def run_inference_one_frame(my_model, input, grid_size, thing_list):
     
     with torch.no_grad():
@@ -71,7 +62,6 @@ def run_inference_one_frame(my_model, input, grid_size, thing_list):
         test_vox_fea_ten = test_vox_fea.to(pytorch_device)
         test_pt_fea_ten = [torch.from_numpy(i).type(torch.FloatTensor).to(pytorch_device) for i in test_pt_fea]
         test_grid_ten = [torch.from_numpy(i[:,:2]).to(pytorch_device) for i in test_grid]
-
 
         # model
         predict_labels, center, offset = my_model(test_pt_fea_ten, test_grid_ten, test_vox_fea_ten)
@@ -104,7 +94,7 @@ def run_inference_one_frame(my_model, input, grid_size, thing_list):
             torch.unsqueeze(center[0], 0),
             torch.unsqueeze(offset[0], 0),
             thing_list,
-            threshold=0.1 ,#args['model']['post_proc']['threshold'], 
+            threshold=0.1, #args['model']['post_proc']['threshold'], 
             nms_kernel=5, #args['model']['post_proc']['nms_kernel'],
             top_k=100, #args['model']['post_proc']['top_k'],
             polar=True,
@@ -113,18 +103,12 @@ def run_inference_one_frame(my_model, input, grid_size, thing_list):
         panoptic_labels = panoptic_labels.cpu().detach().numpy().astype(np.uint32)
 
         panoptic = panoptic_labels[0, test_grid[count][:, 0], test_grid[count][:, 1], test_grid[count][:, 2]]
-
         panoptic.tofile("test.label")
-
 
 
 def main(args, data_tuple, thing_list):
     
-    data_path = args['dataset']['path']
-    test_batch_size = args['model']['test_batch_size']
-    # pretrained_model = args['model']['pretrained_model']
     pretrained_model = "pretrained_weight/Panoptic_SemKITTI_PolarNet.pt"
-    output_path = args['dataset']['output_path']
     compression_model = args['dataset']['grid_size'][2]
     grid_size = args['dataset']['grid_size']
     visibility = args['model']['visibility']
@@ -141,7 +125,7 @@ def main(args, data_tuple, thing_list):
     unique_label_str=[SemKITTI_label_name[x] for x in unique_label+1]
 
     # prepare model
-    my_BEV_model=BEV_Unet(n_class=len(unique_label), n_height = compression_model, input_batch_norm = True, dropout = 0.5, circular_padding = circular_padding, use_vis_fea=visibility)
+    my_BEV_model = BEV_Unet(n_class=len(unique_label), n_height = compression_model, input_batch_norm = True, dropout = 0.5, circular_padding = circular_padding, use_vis_fea=visibility)
     my_model = ptBEVnet(my_BEV_model, pt_model = 'pointnet', grid_size =  grid_size, fea_dim = fea_dim, max_pt_per_encode = 256,
                             out_pt_fea_dim = 512, kernal_size = 1, pt_selection = 'random', fea_compre = compression_model)
     print(os.path.exists(pretrained_model))

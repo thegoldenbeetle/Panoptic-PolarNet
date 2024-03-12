@@ -190,7 +190,7 @@ def main(args):
 if __name__ == '__main__':
     # Testing settings
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-d', '--data_dir', default='data')
+    parser.add_argument('-d', '--data_dir', default='/data')
     parser.add_argument('-p', '--pretrained_model', default='pretrained_weight/Panoptic_SemKITTI_PolarNet.pt')
     parser.add_argument('-c', '--configs', default='configs/SemanticKITTI_model/Panoptic-PolarNet.yaml')
     

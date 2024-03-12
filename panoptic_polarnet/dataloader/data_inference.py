@@ -25,7 +25,7 @@ def process_one_frame(
 ):
 
     # parameters
-    with open("semantic-kitti.yaml", 'r') as stream:
+    with open("./configs/semantic-kitti.yaml", 'r') as stream:
         semkittiyaml = yaml.safe_load(stream)
     thing_class = semkittiyaml['thing_class']
     thing_list = [cl for cl, ignored in thing_class.items() if ignored]   

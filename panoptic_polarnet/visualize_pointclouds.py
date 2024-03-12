@@ -64,8 +64,8 @@ def animate_point_clouds(point_clouds, labels, semantic_color_dict, color_option
     vis.create_window()
 
     # Set background color to black
-    # vis.get_render_option().background_color = np.array([0, 0, 0])
-    vis.get_render_option().background_color = np.array([255, 255, 255])
+    vis.get_render_option().background_color = np.array([0, 0, 0])
+    # vis.get_render_option().background_color = np.array([255, 255, 255])
     vis.add_geometry(point_cloud)
 
     if len(point_clouds) == 1:
