@@ -19,7 +19,7 @@ classifiers = [
 ]
 dependencies = [
   "torch",
-  "torch_scatter"
+  "torch_scatter",
   "numba",
   "open3d",
   "numpy",

@@ -25,7 +25,10 @@ Evaluate:
 Inference:
 `python3 -m panoptic_polarnet.inference` 
 
-Visualize:s
+Export to onnx:
+`python3 -m panoptic_polarnet.export_to_onnx`
+
+Visualize:
 `python3 -m panoptic_polarnet.visualize_pointclouds` 
 
 Visualization example:

@@ -4,8 +4,8 @@ dataset:
     name: semantickitti
     # path: data
     path: /data
-    output_path: out/SemKITTI_2
-    instance_pkl_path: /instance_preprocess
+    output_path: /mnt/tank/scratch/lvasileva/SemKITTI_2
+    instance_pkl_path: /mnt/tank/scratch/lvasileva/instance_preprocess
     rotate_aug: True
     flip_aug: True
     inst_aug: True

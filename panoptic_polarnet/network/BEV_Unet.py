@@ -10,27 +10,67 @@ from dropblock import DropBlock2D
 
 class BEV_Unet(nn.Module):
 
-    def __init__(self,n_class,n_height,dilation = 1,group_conv=False,input_batch_norm = False,dropout = 0.,circular_padding = False, dropblock = True, use_vis_fea=False):
+    def __init__(
+        self,
+        n_class,
+        n_height,
+        dilation=1,
+        group_conv=False,
+        input_batch_norm=False,
+        dropout=0.0,
+        circular_padding=False,
+        dropblock=True,
+        use_vis_fea=False,
+    ):
         super(BEV_Unet, self).__init__()
         self.n_class = n_class
         self.n_height = n_height
         if use_vis_fea:
-            self.network = UNet(n_class*n_height,2*n_height,dilation,group_conv,input_batch_norm,dropout,circular_padding,dropblock)
+            self.network = UNet(
+                n_class * n_height,
+                2 * n_height,
+                dilation,
+                group_conv,
+                input_batch_norm,
+                dropout,
+                circular_padding,
+                dropblock,
+            )
         else:
-            self.network = UNet(n_class*n_height,n_height,dilation,group_conv,input_batch_norm,dropout,circular_padding,dropblock)
+            self.network = UNet(
+                n_class * n_height,
+                n_height,
+                dilation,
+                group_conv,
+                input_batch_norm,
+                dropout,
+                circular_padding,
+                dropblock,
+            )
 
     def forward(self, x):
-        x,center,offset = self.network(x)
-        
-        x = x.permute(0,2,3,1)
-        new_shape = list(x.size())[:3] + [self.n_height,self.n_class]
-        x = x.view(new_shape)
-        x = x.permute(0,4,1,2,3)
+        x, center, offset = self.network(x)
 
-        return x,center,offset
-    
+        x = x.permute(0, 2, 3, 1)
+        new_shape = list(x.size())[:3] + [self.n_height, self.n_class]
+        x = x.view(new_shape)
+        x = x.permute(0, 4, 1, 2, 3)
+
+        return x, center, offset
+
+
 class UNet(nn.Module):
-    def __init__(self, n_class,n_height,dilation,group_conv,input_batch_norm, dropout,circular_padding,dropblock):
+    def __init__(
+        self,
+        n_class,
+        n_height,
+        dilation,
+        group_conv,
+        input_batch_norm,
+        dropout,
+        circular_padding,
+        dropblock,
+    ):
         super(UNet, self).__init__()
         # encoder
         self.inc = inconv(n_height, 64, dilation, input_batch_norm, circular_padding)
@@ -40,11 +80,39 @@ class UNet(nn.Module):
         self.down4 = down(512, 512, dilation, group_conv, circular_padding)
 
         # semantic decoder
-        self.up1 = up(1024, 256, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up2 = up(512, 128, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up3 = up(256, 64, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up4 = up(128, 64, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.dropout = nn.Dropout(p=0. if dropblock else dropout)
+        self.up1 = up(
+            1024,
+            256,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
+        self.up2 = up(
+            512,
+            128,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
+        self.up3 = up(
+            256,
+            64,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
+        self.up4 = up(
+            128,
+            64,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
+        self.dropout = nn.Dropout(p=0.0 if dropblock else dropout)
         # semantic head
         self.outc = outconv(64, n_class)
 
@@ -53,8 +121,22 @@ class UNet(nn.Module):
         # self.i_up2 = up(512, 128, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
         # self.i_up3 = up(256, 64, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
         # self.i_up4 = up(128, 32, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.i_up4_center = up(128, 32, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.i_up4_offset = up(128, 32, circular_padding, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
+        self.i_up4_center = up(
+            128,
+            32,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
+        self.i_up4_offset = up(
+            128,
+            32,
+            circular_padding,
+            group_conv=group_conv,
+            use_dropblock=dropblock,
+            drop_p=dropout,
+        )
         # instance head
         self.i_outc_center = outconv(32, 1)
         self.i_outc_offset = outconv(32, 2)
@@ -85,18 +167,20 @@ class UNet(nn.Module):
 
         return s_x, i_x_center, i_x_offset
 
+
 class double_conv(nn.Module):
-    '''(conv => BN => ReLU) * 2'''
-    def __init__(self, in_ch, out_ch,group_conv,dilation=1):
+    """(conv => BN => ReLU) * 2"""
+
+    def __init__(self, in_ch, out_ch, group_conv, dilation=1):
         super(double_conv, self).__init__()
         if group_conv:
             self.conv = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, 3, padding=1,groups = min(out_ch,in_ch)),
+                nn.Conv2d(in_ch, out_ch, 3, padding=1, groups=min(out_ch, in_ch)),
                 nn.BatchNorm2d(out_ch),
                 nn.LeakyReLU(inplace=True),
-                nn.Conv2d(out_ch, out_ch, 3, padding=1,groups = out_ch),
+                nn.Conv2d(out_ch, out_ch, 3, padding=1, groups=out_ch),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
         else:
             self.conv = nn.Sequential(
@@ -105,45 +189,47 @@ class double_conv(nn.Module):
                 nn.LeakyReLU(inplace=True),
                 nn.Conv2d(out_ch, out_ch, 3, padding=1),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
 
     def forward(self, x):
         x = self.conv(x)
         return x
 
+
 class double_conv_circular(nn.Module):
-    '''(conv => BN => ReLU) * 2'''
-    def __init__(self, in_ch, out_ch,group_conv,dilation=1):
+    """(conv => BN => ReLU) * 2"""
+
+    def __init__(self, in_ch, out_ch, group_conv, dilation=1):
         super(double_conv_circular, self).__init__()
         if group_conv:
             self.conv1 = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, 3, padding=(1,0),groups = min(out_ch,in_ch)),
+                nn.Conv2d(in_ch, out_ch, 3, padding=(1, 0), groups=min(out_ch, in_ch)),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
             self.conv2 = nn.Sequential(
-                nn.Conv2d(out_ch, out_ch, 3, padding=(1,0),groups = out_ch),
+                nn.Conv2d(out_ch, out_ch, 3, padding=(1, 0), groups=out_ch),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
         else:
             self.conv1 = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, 3, padding=(1,0)),
+                nn.Conv2d(in_ch, out_ch, 3, padding=(1, 0)),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
             self.conv2 = nn.Sequential(
-                nn.Conv2d(out_ch, out_ch, 3, padding=(1,0)),
+                nn.Conv2d(out_ch, out_ch, 3, padding=(1, 0)),
                 nn.BatchNorm2d(out_ch),
-                nn.LeakyReLU(inplace=True)
+                nn.LeakyReLU(inplace=True),
             )
 
     def forward(self, x):
-        #add circular padding
-        x = F.pad(x,(1,1,0,0),mode = 'circular')
+        # add circular padding
+        x = F.pad(x, (1, 1, 0, 0), mode="circular")
         x = self.conv1(x)
-        x = F.pad(x,(1,1,0,0),mode = 'circular')
+        x = F.pad(x, (1, 1, 0, 0), mode="circular")
         x = self.conv2(x)
         return x
 
@@ -155,18 +241,24 @@ class inconv(nn.Module):
             if circular_padding:
                 self.conv = nn.Sequential(
                     nn.BatchNorm2d(in_ch),
-                    double_conv_circular(in_ch, out_ch,group_conv = False,dilation = dilation)
+                    double_conv_circular(
+                        in_ch, out_ch, group_conv=False, dilation=dilation
+                    ),
                 )
             else:
                 self.conv = nn.Sequential(
                     nn.BatchNorm2d(in_ch),
-                    double_conv(in_ch, out_ch,group_conv = False,dilation = dilation)
+                    double_conv(in_ch, out_ch, group_conv=False, dilation=dilation),
                 )
         else:
             if circular_padding:
-                self.conv = double_conv_circular(in_ch, out_ch,group_conv = False,dilation = dilation)
+                self.conv = double_conv_circular(
+                    in_ch, out_ch, group_conv=False, dilation=dilation
+                )
             else:
-                self.conv = double_conv(in_ch, out_ch,group_conv = False,dilation = dilation)
+                self.conv = double_conv(
+                    in_ch, out_ch, group_conv=False, dilation=dilation
+                )
 
     def forward(self, x):
         x = self.conv(x)
@@ -179,13 +271,15 @@ class down(nn.Module):
         if circular_padding:
             self.mpconv = nn.Sequential(
                 nn.MaxPool2d(2),
-                double_conv_circular(in_ch, out_ch,group_conv = group_conv,dilation = dilation)
+                double_conv_circular(
+                    in_ch, out_ch, group_conv=group_conv, dilation=dilation
+                ),
             )
         else:
             self.mpconv = nn.Sequential(
                 nn.MaxPool2d(2),
-                double_conv(in_ch, out_ch,group_conv = group_conv,dilation = dilation)
-            )                
+                double_conv(in_ch, out_ch, group_conv=group_conv, dilation=dilation),
+            )
 
     def forward(self, x):
         x = self.mpconv(x)
@@ -193,22 +287,33 @@ class down(nn.Module):
 
 
 class up(nn.Module):
-    def __init__(self, in_ch, out_ch, circular_padding, bilinear=True, group_conv=False, use_dropblock = False, drop_p = 0.5):
+    def __init__(
+        self,
+        in_ch,
+        out_ch,
+        circular_padding,
+        bilinear=True,
+        group_conv=False,
+        use_dropblock=False,
+        drop_p=0.5,
+    ):
         super(up, self).__init__()
 
         #  would be a nice idea if the upsampling could be learned too,
         #  but my machine do not have enough memory to handle all those weights
         if bilinear:
-            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
         elif group_conv:
-            self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2,groups = in_ch//2)
+            self.up = nn.ConvTranspose2d(
+                in_ch // 2, in_ch // 2, 2, stride=2, groups=in_ch // 2
+            )
         else:
-            self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2)
+            self.up = nn.ConvTranspose2d(in_ch // 2, in_ch // 2, 2, stride=2)
 
         if circular_padding:
-            self.conv = double_conv_circular(in_ch, out_ch,group_conv = group_conv)
+            self.conv = double_conv_circular(in_ch, out_ch, group_conv=group_conv)
         else:
-            self.conv = double_conv(in_ch, out_ch,group_conv = group_conv)
+            self.conv = double_conv(in_ch, out_ch, group_conv=group_conv)
 
         self.use_dropblock = use_dropblock
         if self.use_dropblock:
@@ -216,15 +321,14 @@ class up(nn.Module):
 
     def forward(self, x1, x2):
         x1 = self.up(x1)
-        
+
         # input is CHW
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
 
-        x1 = F.pad(x1, (diffX // 2, diffX - diffX//2,
-                        diffY // 2, diffY - diffY//2))
-        
-        # for padding issues, see 
+        x1 = F.pad(x1, (diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2))
+
+        # for padding issues, see
         # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
         # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
 
